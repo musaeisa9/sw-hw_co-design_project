@@ -1,0 +1,120 @@
+# Update dependencies:
+#
+#  - python3 -m pip install --user --upgrade pip-tools build
+#  - git clean -fdx  # remove all untracked files!
+#  - (pip-compile --upgrade -o requirements.txt requirements.in)
+#
+# Prepare a release:
+#
+#  - git pull --rebase
+#  - Remove untracked files/dirs: git clean -fdx
+#  - maybe update version in pyperformance/__init__.py and doc/conf.py
+#  - set release date in doc/changelog.rst
+#  - git commit -a -m "prepare release x.y"
+#  - run tests: tox --parallel auto
+#  - git push
+#  - check the CI status:
+#    https://github.com/python/pyperformance/actions
+#
+# Release a new version with GitHub (preferred):
+#
+#  - go to the GitHub release tab: https://github.com/python/pyperformance/releases
+#  - click "Draft a new release" and fill the contents
+#  - finally click the "Publish release" button! Done!
+#  - monitor the publish status: https://github.com/python/pyperformance/actions/workflows/publish.yml
+#
+# Release a new version manually:
+#
+#  - git tag VERSION
+#  - git push --tags
+#  - Remove untracked files/dirs: git clean -fdx
+#  - python -m build
+#  - twine upload dist/*
+#
+# After the release:
+#
+#  - set version to n+1: pyperformance/__init__.py and doc/conf.py
+#  - git commit -a -m "post-release"
+#  - git push
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=61" ]
+
+[project]
+name = "pyperformance"
+description = "Python benchmark suite"
+readme = "README.rst"
+license = { text = "MIT" }
+authors = [ { name = "Collin Winter" }, { name = "Jeffrey Yasskin" } ]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dynamic = [ "version" ]
+dependencies = [
+  "packaging",
+  "pyperf",
+  "tomli; python_version<'3.11'",
+]
+optional-dependencies.dev = [
+  "mypy==2.3.1",
+  "tomli",       # Needed even on 3.11+ for typechecking with mypy
+  "tox",
+]
+urls = { Homepage = "https://github.com/python/pyperformance" }
+scripts.pyperformance = "pyperformance.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+dynamic.version = { attr = "pyperformance.__version__" }
+packages.find = {}  # Scanning implicit namespaces is active by default
+
+[tool.ruff]
+target-version = "py310"
+exclude = [
+  "pyperformance/data-files/",
+]
+fix = true
+lint.select = [
+  "E",      # pycodestyle errors
+  "F",      # pyflakes errors
+  "I",      # isort
+  "ISC",    # flake8-implicit-str-concat
+  "RUF022", # unsorted-dunder-all
+  "RUF100", # unused noqa (yesqa)
+]
+lint.ignore = [
+  "E501", # line too long
+]
+
+[tool.pyproject-fmt]
+max_supported_python = "3.14"
+
+[tool.mypy]
+python_version = "3.10"
+pretty = true
+enable_error_code = "ignore-without-code"
+disallow_any_generics = true
+strict_concatenate = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+files = [
+  "pyperformance/",
+]
+exclude = [
+  "pyperformance/data-files/",
+  "pyperformance/tests/",
+]
+overrides = [ { module = "pyperf", ignore_missing_imports = true } ]

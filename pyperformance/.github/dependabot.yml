@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    exclude-paths:
+      - "pyperformance/data-files/**"
+    schedule:
+      interval: "monthly"
+    cooldown:
+      default-days: 7

@@ -1,0 +1,9 @@
+# Ignore perf binaries and intermediate parsing files
+*.data
+*.data.old
+*.perf
+*.folded
+
+# Ignore Python cache
+__pycache__/
+*.pyc
