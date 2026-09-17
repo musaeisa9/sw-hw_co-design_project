@@ -140,9 +140,14 @@ class Sphere(object):
         return 'Sphere(%s,%s)' % (repr(self.centre), self.radius)
 
     def intersectionTime(self, ray):
-        cp = self.centre - ray.point
-        v = cp.dot(ray.vector)
-        discriminant = (self.radius * self.radius) - (cp.dot(cp) - v * v)
+        cpx = self.centre.x - ray.point.x
+        cpy = self.centre.y - ray.point.y
+        cpz = self.centre.z - ray.point.z
+        
+        v = (cpx * ray.vector.x) + (cpy * ray.vector.y) + (cpz * ray.vector.z)
+        cp_dot_cp = (cpx * cpx) + (cpy * cpy) + (cpz * cpz)
+        
+        discriminant = (self.radius * self.radius) - (cp_dot_cp - v * v)
         if discriminant < 0:
             return None
         else:
@@ -267,14 +272,22 @@ class Scene(object):
         if self.recursionDepth > 3:
             return (0, 0, 0)
         try:
-            self.recursionDepth = self.recursionDepth + 1
-            intersections = [(o, o.intersectionTime(ray), s)
-                             for (o, s) in self.objects]
-            i = firstIntersection(intersections)
-            if i is None:
-                return (0, 0, 0)  # the background colour
+            self.recursionDepth += 1
+            
+            # Find the closest intersection without building lists/tuples
+            closest_i = None
+            min_t = float('inf')
+            
+            for o, s in self.objects:
+                t = o.intersectionTime(ray)
+                if t is not None and t > -EPSILON and t < min_t:
+                    min_t = t
+                    closest_i = (o, t, s)
+                    
+            if closest_i is None:
+                return (0, 0, 0)
             else:
-                (o, t, s) = i
+                o, t, s = closest_i
                 p = ray.pointAtTime(t)
                 return s.colourAt(self, ray, p, o.normalAt(p))
         finally:
